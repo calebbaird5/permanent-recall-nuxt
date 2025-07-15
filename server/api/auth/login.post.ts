@@ -11,10 +11,19 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse);
+  console.log("email:", email);
 
   // Find user by email
   const user = await prisma.user.findUnique({
     where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      settings: true,
+      password: true,
+    },
   });
 
   if (!user) {
@@ -33,12 +42,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Remove password before setting session/response
+  const { password: _pw, ...userSession } = user;
+
   // set the user session in the cookie
   await setUserSession(event, {
-    user: {
-      name: user.name,
-      email: user.email,
-    },
+    user: userSession,
   });
-  return {};
+  return {
+    success: true,
+    user: userSession,
+  };
 });

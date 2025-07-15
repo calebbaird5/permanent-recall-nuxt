@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import * as z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
+import { useRoute } from "vue-router";
 
 const { fetch: refreshSession } = useUserSession();
+const route = useRoute();
 const schema = z.object({
   email: z.string().email("Invalid email"),
   password: z.string().min(8, "Must be at least 8 characters"),
@@ -21,13 +23,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   error.value = null; // Clear any previous errors
 
   try {
-    await $fetch("/api/login", {
+    await $fetch("/api/auth/login", {
       method: "POST",
       body: event.data,
     });
 
     await refreshSession();
-    await navigateTo("/");
+    const redirect = route.query.redirect as string | undefined;
+    await navigateTo(redirect || "/");
   } catch (e) {
     console.error("Login failed", e);
     error.value = "Invalid email or password";

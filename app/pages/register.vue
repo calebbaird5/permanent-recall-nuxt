@@ -52,7 +52,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   error.value = null;
   loading.value = true;
   try {
-    await $fetch("/api/register", {
+    await $fetch("/api/auth/register", {
       method: "POST",
       body: event.data,
     });

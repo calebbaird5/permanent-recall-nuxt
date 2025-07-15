@@ -1,12 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { getValidatedIdParam } from '../utils';
 
 const prisma = new PrismaClient();
 
-const bodySchema = z.object({ id: z.number() });
-
 export default defineEventHandler(async (event) => {
-  const { id } = await readValidatedBody(event, bodySchema.parse);
+  const id = getValidatedIdParam(event, 'passage');
   await prisma.passage.delete({ where: { id } });
   return { success: true };
 }); 

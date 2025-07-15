@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 const prisma = new PrismaClient();
@@ -11,7 +11,10 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const { email, password, name } = await readValidatedBody(event, bodySchema.parse);
+  const { email, password, name } = await readValidatedBody(
+    event,
+    bodySchema.parse,
+  );
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -34,15 +37,22 @@ export default defineEventHandler(async (event) => {
       name,
       password: hashedPassword,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      settings: true,
+    },
   });
 
   // Optionally, set the user session after registration
   await setUserSession(event, {
-    user: {
-      name: user.name,
-      email: user.email,
-    },
+    user,
   });
 
-  return { success: true };
-}); 
+  return {
+    success: true,
+    user,
+  };
+});

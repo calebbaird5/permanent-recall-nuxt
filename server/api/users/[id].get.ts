@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { getValidatedIdParam } from '../utils';
 
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  const id = Number(getRouterParam(event, 'id'));
-  if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid user id' });
+  const id = getValidatedIdParam(event, 'user');
   const user = await prisma.user.findUnique({
     where: { id },
     select: {

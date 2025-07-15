@@ -1,10 +1,6 @@
 <script setup lang="ts">
-const { loggedIn, session, user, clear, fetch } = useUserSession();
-
-onMounted(async () => {
-  if (!loggedIn.value) {
-    return navigateTo("/login");
-  }
+definePageMeta({
+  middleware: "auth",
 });
 </script>
 
