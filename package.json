@@ -12,10 +12,15 @@
     "lint:fix": "eslint --fix ."
   },
   "dependencies": {
+    "@auth/core": "^0.40.0",
+    "@auth/prisma-adapter": "^2.10.0",
     "@iconify-json/lucide": "^1.2.56",
     "@iconify-json/simple-icons": "^1.2.42",
     "@nuxt/ui": "^3.2.0",
-    "nuxt": "^3.17.6"
+    "@prisma/client": "^6.11.1",
+    "nuxt": "^3.17.6",
+    "nuxt-auth-utils": "^0.5.20",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.5.2",

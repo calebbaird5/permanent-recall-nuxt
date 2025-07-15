@@ -1,47 +1,68 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const navItems = ref<NavigationMenuItem[][]>([
-  [
-    {
-      label: "Dashboard",
-      icon: "i-lucide-home",
-      to: "/",
-    },
-    {
-      label: "Passages",
-      icon: "i-lucide-notebook-text",
-      to: "/passages",
-    },
-  ],
-  [
-    {
-      label: "User",
-      icon: "i-lucide-user",
-      avatar: {
-        src: "https://avatars.githubusercontent.com/u/739984?v=4",
-        alt: "User avatar",
+const { loggedIn, user, clear: clearSession } = useUserSession();
+
+async function logout() {
+  await clearSession();
+  await navigateTo("/");
+}
+
+const navItems = computed(() => {
+  const items: NavigationMenuItem[][] = [
+    [
+      {
+        label: "Dashboard",
+        icon: "i-lucide-home",
+        to: "/",
       },
-      children: [
-        {
-          label: "Profile",
-          icon: "i-lucide-user",
-          to: "/profile",
+      {
+        label: "Passages",
+        icon: "i-lucide-notebook-text",
+        to: "/passages",
+      },
+    ],
+  ];
+
+  if (loggedIn.value) {
+    items.push([
+      {
+        label: user.value?.name || "User",
+        icon: "i-lucide-user",
+        avatar: {
+          alt: user.value?.name || "A",
         },
-        {
-          label: "Settings",
-          icon: "i-lucide-settings",
-          to: "/settings",
-        },
-        {
-          label: "Logout",
-          icon: "i-lucide-log-out",
-          to: "/logout",
-        },
-      ],
-    },
-  ],
-]);
+        children: [
+          {
+            label: "Profile",
+            icon: "i-lucide-user",
+            to: "/profile",
+          },
+          {
+            label: "Settings",
+            icon: "i-lucide-settings",
+            to: "/settings",
+          },
+          {
+            label: "Logout",
+            icon: "i-lucide-log-out",
+            onSelect: logout,
+          },
+        ],
+      },
+    ]);
+  } else {
+    items.push([
+      {
+        label: "Login",
+        icon: "i-lucide-log-in",
+        to: "/login",
+      },
+    ]);
+  }
+
+  return items;
+});
 </script>
 
 <template>
