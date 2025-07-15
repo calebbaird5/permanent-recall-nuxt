@@ -1,32 +1,3 @@
-<template>
-  <div>
-    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-      <UFormField label="Name" name="name">
-        <UInput v-model="state.name" />
-      </UFormField>
-
-      <UFormField label="Email" name="email">
-        <UInput v-model="state.email" />
-      </UFormField>
-
-      <UFormField label="Password" name="password">
-        <UInput v-model="state.password" type="password" />
-      </UFormField>
-
-      <UButton type="submit" :loading="loading"> Register </UButton>
-
-      <div v-if="error" class="text-red-500 text-sm mt-2">
-        {{ error }}
-      </div>
-    </UForm>
-    <div class="mt-4 text-center">
-      <NuxtLink to="/login" class="text-blue-600 hover:underline"
-        >Already have an account? Login</NuxtLink
-      >
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import * as z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
@@ -68,3 +39,30 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
 }
 </script>
+
+<template>
+  <UContainer class="max-w-md py-10">
+    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+      <UFormField label="Name" name="name">
+        <UInput v-model="state.name" class="w-full" />
+      </UFormField>
+
+      <UFormField label="Email" name="email">
+        <UInput v-model="state.email" class="w-full" />
+      </UFormField>
+
+      <UFormField label="Password" name="password">
+        <UInput v-model="state.password" type="password" class="w-full" />
+      </UFormField>
+
+      <UButton type="submit" :loading="loading"> Register </UButton>
+
+      <div v-if="error" class="text-red-500 text-sm mt-2">
+        {{ error }}
+      </div>
+    </UForm>
+    <div class="mt-4 text-center">
+      <ULink to="/login"> Already have an account? Login </ULink>
+    </div>
+  </UContainer>
+</template>

@@ -14,7 +14,7 @@ const navItems = computed(() => {
       {
         label: "Dashboard",
         icon: "i-lucide-home",
-        to: "/",
+        to: "/dashboard",
       },
       {
         label: "Passages",
@@ -28,6 +28,7 @@ const navItems = computed(() => {
     items.push([
       {
         label: user.value?.name ?? "User",
+        ui: { linkLabel: "hidden sm:inline" },
         icon: "i-lucide-user",
         avatar: {
           alt: user.value?.name ?? "A",

@@ -39,19 +39,24 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-    <UFormField label="Email" name="email">
-      <UInput v-model="state.email" />
-    </UFormField>
+  <UContainer class="max-w-md py-10">
+    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+      <UFormField label="Email" name="email">
+        <UInput v-model="state.email" class="w-full" />
+      </UFormField>
 
-    <UFormField label="Password" name="password">
-      <UInput v-model="state.password" type="password" />
-    </UFormField>
+      <UFormField label="Password" name="password">
+        <UInput v-model="state.password" type="password" class="w-full" />
+      </UFormField>
 
-    <UButton type="submit"> Submit </UButton>
+      <UButton type="submit" class="mr-4">Login</UButton>
 
-    <div v-if="error" class="text-red-500 text-sm mt-2">
-      {{ error }}
-    </div>
-  </UForm>
+      <div class="mt-4 text-center">
+        <ULink to="/register"> Don't yet have an account? Register </ULink>
+      </div>
+      <div v-if="error" class="text-red-500 text-sm mt-2">
+        {{ error }}
+      </div>
+    </UForm>
+  </UContainer>
 </template>

@@ -81,41 +81,45 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto py-10">
+  <UContainer class="max-w-md mx-auto py-10">
     <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
       <UFormField label="Name" name="name">
-        <UInput v-model="state.name" />
+        <UInput v-model="state.name" class="w-full" />
       </UFormField>
 
       <UFormField label="Email" name="email">
-        <UInput v-model="state.email" />
+        <UInput v-model="state.email" class="w-full" />
       </UFormField>
 
       <template v-if="showPassword">
         <UFormField label="New Password" name="password">
-          <UInput v-model="state.password" type="password" />
+          <UInput v-model="state.password" type="password" class="w-full" />
         </UFormField>
         <UFormField label="Confirm Password" name="passwordConfirm">
-          <UInput v-model="state.passwordConfirm" type="password" />
+          <UInput
+            v-model="state.passwordConfirm"
+            type="password"
+            class="w-full"
+          />
         </UFormField>
       </template>
+      <UButton type="submit" :loading="loading" color="primary">
+        Update Profile
+      </UButton>
 
       <UButton
         type="button"
         @click="showPassword = !showPassword"
         variant="outline"
         color="primary"
+        class="ml-4"
       >
         {{ showPassword ? "Cancel Password Change" : "Change Password" }}
-      </UButton>
-
-      <UButton type="submit" :loading="loading" color="primary">
-        Update Profile
       </UButton>
 
       <div v-if="error" class="text-red-500 text-sm mt-2">
         {{ error }}
       </div>
     </UForm>
-  </div>
+  </UContainer>
 </template>
