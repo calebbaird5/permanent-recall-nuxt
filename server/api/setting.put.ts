@@ -1,0 +1,17 @@
+import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
+
+const prisma = new PrismaClient();
+
+const bodySchema = z.object({
+  id: z.number(),
+  name: z.string().optional(),
+  value: z.string().optional(),
+  userId: z.number().optional(),
+});
+
+export default defineEventHandler(async (event) => {
+  const { id, ...data } = await readValidatedBody(event, bodySchema.parse);
+  const setting = await prisma.setting.update({ where: { id }, data });
+  return { setting };
+}); 

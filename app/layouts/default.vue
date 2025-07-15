@@ -27,10 +27,10 @@ const navItems = computed(() => {
   if (loggedIn.value) {
     items.push([
       {
-        label: user.value?.name || "User",
+        label: user.value?.name ?? "User",
         icon: "i-lucide-user",
         avatar: {
-          alt: user.value?.name || "A",
+          alt: user.value?.name ?? "A",
         },
         children: [
           {
@@ -57,6 +57,11 @@ const navItems = computed(() => {
         label: "Login",
         icon: "i-lucide-log-in",
         to: "/login",
+      },
+      {
+        label: "Register",
+        icon: "i-lucide-user-plus",
+        to: "/register",
       },
     ]);
   }
