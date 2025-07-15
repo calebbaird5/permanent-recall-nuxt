@@ -2,7 +2,6 @@
 const { loggedIn, session, user, clear, fetch } = useUserSession();
 
 onMounted(async () => {
-  await fetchUser();
   if (!loggedIn.value) {
     return navigateTo("/login");
   }
