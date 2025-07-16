@@ -50,5 +50,5 @@ export default defineEventHandler(async (event) => {
     await setUserSession(event, { user: updatedUser });
   }
 
-  return { updatedUser };
+  return updatedUser;
 });

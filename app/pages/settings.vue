@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import * as z from 'zod';
-import type { FormSubmitEvent } from '@nuxt/ui';
-import type { SettingListResponse, SettingResponse } from '@/types/api';
+import { ref, reactive } from "vue";
+import * as z from "zod";
+import type { FormSubmitEvent } from "@nuxt/ui";
+import type { Setting } from "@/types/api";
 
 definePageMeta({
-  middleware: 'auth',
+  middleware: "auth",
 });
 
 const { user } = useUserSession();
@@ -30,29 +30,34 @@ const settingIds = reactive<{ [key: string]: number | null }>({
   strictCapitalization: null,
 });
 
-onMounted(async () => {
-  if (!user.value?.id) return;
-  loading.value = true;
-  try {
-    // Fetch all settings for this user
-    const res = await $fetch<SettingListResponse>('/api/settings');
-    const settings = res.settings;
-    const sp = settings.find(s => s.name === 'strict-punctuation' && s.userId === user.value.id);
-    const sc = settings.find(s => s.name === 'strict-capitalization' && s.userId === user.value.id);
-    if (sp) {
-      state.strictPunctuation = sp.value === 'true';
-      settingIds.strictPunctuation = sp.id;
-    }
-    if (sc) {
-      state.strictCapitalization = sc.value === 'true';
-      settingIds.strictCapitalization = sc.id;
-    }
-  } catch {
-    error.value = 'Failed to load settings.';
-  } finally {
-    loading.value = false;
-  }
-});
+const { data: settings } = await useFetch<Setting[]>("/api/settings");
+
+const strictPunctuationSetting = computed(() =>
+  settings.value?.find(
+    (s) => s.name === "strict-punctuation" && s.userId === user.value?.id,
+  ),
+);
+const strictCapitalizationSetting = computed(() =>
+  settings.value?.find(
+    (s) => s.name === "strict-capitalization" && s.userId === user.value?.id,
+  ),
+);
+
+watch(
+  strictPunctuationSetting,
+  () =>
+    (state.strictPunctuation =
+      strictPunctuationSetting.value?.value === "true"),
+  { immediate: true },
+);
+
+watch(
+  strictCapitalizationSetting,
+  () =>
+    (state.strictCapitalization =
+      strictCapitalizationSetting.value?.value === "true"),
+  { immediate: true },
+);
 
 async function onSubmit(_event: FormSubmitEvent<Schema>) {
   if (!user.value?.id) return;
@@ -60,33 +65,47 @@ async function onSubmit(_event: FormSubmitEvent<Schema>) {
   error.value = null;
   try {
     // Upsert strict-punctuation
-    if (settingIds.strictPunctuation) {
-      await $fetch<SettingResponse>(`/api/settings/${settingIds.strictPunctuation}`, {
-        method: 'PUT',
-        body: { value: state.strictPunctuation ? 'true' : 'false' },
-      });
+    if (strictPunctuationSetting.value) {
+      await $fetch<Setting>(
+        `/api/settings/${strictPunctuationSetting.value.id}`,
+        {
+          method: "PUT",
+          body: { value: state.strictPunctuation ? "true" : "false" },
+        },
+      );
     } else {
-      const res = await $fetch<SettingResponse>('/api/settings', {
-        method: 'POST',
-        body: { name: 'strict-punctuation', value: state.strictPunctuation ? 'true' : 'false', userId: user.value.id },
+      const createdSetting = await $fetch<Setting>("/api/settings", {
+        method: "POST",
+        body: {
+          name: "strict-punctuation",
+          value: state.strictPunctuation ? "true" : "false",
+          userId: user.value.id,
+        },
       });
-      settingIds.strictPunctuation = res.setting.id;
+      settings.value?.push?.(createdSetting);
     }
-    // Upsert strict-capitalization
     if (settingIds.strictCapitalization) {
-      await $fetch<SettingResponse>(`/api/settings/${settingIds.strictCapitalization}`, {
-        method: 'PUT',
-        body: { value: state.strictCapitalization ? 'true' : 'false' },
-      });
+      await $fetch<Setting>(
+        `/api/settings/${settingIds.strictCapitalization}`,
+        {
+          method: "PUT",
+          body: { value: state.strictCapitalization ? "true" : "false" },
+        },
+      );
     } else {
-      const res = await $fetch<SettingResponse>('/api/settings', {
-        method: 'POST',
-        body: { name: 'strict-capitalization', value: state.strictCapitalization ? 'true' : 'false', userId: user.value.id },
+      const createdSetting = await $fetch<Setting>("/api/settings", {
+        method: "POST",
+        body: {
+          name: "strict-capitalization",
+          value: state.strictCapitalization ? "true" : "false",
+          userId: user.value.id,
+        },
       });
-      settingIds.strictCapitalization = res.setting.id;
+      settings.value?.push?.(createdSetting);
     }
-  } catch {
-    error.value = 'Failed to save settings.';
+  } catch (e) {
+    console.error(e);
+    error.value = "Failed to save settings.";
   } finally {
     loading.value = false;
   }

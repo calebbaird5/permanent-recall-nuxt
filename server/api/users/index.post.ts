@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import { z } from 'zod';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -12,11 +12,17 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const { name, email, password, roleId } = await readValidatedBody(event, bodySchema.parse);
+  const { name, email, password, roleId } = await readValidatedBody(
+    event,
+    bodySchema.parse,
+  );
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    throw createError({ statusCode: 400, message: 'Email is already registered' });
+    throw createError({
+      statusCode: 400,
+      message: "Email is already registered",
+    });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,5 +32,5 @@ export default defineEventHandler(async (event) => {
     select: { id: true, name: true, email: true, roleId: true },
   });
 
-  return { user };
-}); 
+  return user;
+});

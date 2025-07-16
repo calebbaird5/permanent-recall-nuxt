@@ -8,12 +8,6 @@ export interface User {
   roleId?: number | null;
 }
 
-export interface UserListResponse {
-  users: User[];
-}
-export interface UserResponse {
-  user: User;
-}
 export interface UserCreatePayload {
   name: string;
   email: string;
@@ -42,7 +36,7 @@ export interface AuthLoginPayload {
 }
 export interface AuthResponse {
   success: boolean;
-  user: Pick<User, 'id' | 'name' | 'email'>;
+  user: Pick<User, "id" | "name" | "email">;
 }
 export interface AuthLogoutResponse {
   success: boolean;
@@ -58,12 +52,6 @@ export interface Passage {
   user?: User;
   reviewDates?: Date[];
   latestReviewDate?: Date | null;
-}
-export interface PassageListResponse {
-  passages: Passage[];
-}
-export interface PassageResponse {
-  passage: Passage;
 }
 export interface PassageCreatePayload {
   prompt: string;
@@ -92,12 +80,6 @@ export interface Role {
   description?: string;
   users?: User[];
 }
-export interface RoleListResponse {
-  roles: Role[];
-}
-export interface RoleResponse {
-  role: Role;
-}
 export interface RoleCreatePayload {
   name: string;
   description?: string;
@@ -118,12 +100,6 @@ export interface Setting {
   userId: number;
   user?: User;
 }
-export interface SettingListResponse {
-  settings: Setting[];
-}
-export interface SettingResponse {
-  setting: Setting;
-}
 export interface SettingCreatePayload {
   name: string;
   value: string;
@@ -136,4 +112,4 @@ export interface SettingUpdatePayload {
 }
 export interface SettingDeleteResponse {
   success: boolean;
-} 
+}

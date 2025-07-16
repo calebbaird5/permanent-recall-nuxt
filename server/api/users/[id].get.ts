@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import { getValidatedIdParam } from '../utils';
+import { PrismaClient } from "@prisma/client";
+import { getValidatedIdParam } from "../utils";
 
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  const id = getValidatedIdParam(event, 'user');
+  const id = getValidatedIdParam(event, "user");
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -16,6 +15,6 @@ export default defineEventHandler(async (event) => {
       settings: true,
     },
   });
-  if (!user) throw createError({ statusCode: 404, message: 'User not found' });
-  return { user };
-}); 
+  if (!user) throw createError({ statusCode: 404, message: "User not found" });
+  return user;
+});

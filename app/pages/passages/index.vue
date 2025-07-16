@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
-import { z } from "zod";
+import { ref } from "vue";
 import type { Passage } from "@/types/api";
 
 definePageMeta({ middleware: "auth" });
 
-const passages = ref<Passage[]>([]);
-const loading = ref(false);
 const error = ref<string | null>(null);
 const showForm = ref(false);
 const formMode = ref<"create" | "edit">("create");
@@ -15,78 +12,17 @@ const passageToDelete = ref<Passage | null>(null);
 const showDelete = ref(false);
 const deleting = ref(false);
 
-const { user } = useUserSession();
-
-const schema = z.object({
-  prompt: z.string().min(1, "Prompt is required"),
-  reference: z.string().min(1, "Reference is required"),
-  text: z.string().min(1, "Text is required"),
-});
-
-type Schema = z.output<typeof schema>;
-
-const formState = reactive<Partial<Schema>>({
-  prompt: "",
-  reference: "",
-  text: "",
-});
-
-async function fetchPassages() {
-  loading.value = true;
-  try {
-    const res = await $fetch("/api/passages");
-    passages.value = (res as { passages: Passage[] }).passages;
-  } catch {
-    error.value = "Failed to load passages.";
-  } finally {
-    loading.value = false;
-  }
-}
-
-onMounted(fetchPassages);
+const { data: passages } = await useFetch<Passages[]>("/api/passages");
 
 function openCreateForm() {
   formMode.value = "create";
-  Object.assign(formState, { prompt: "", reference: "", text: "" });
   passageToEdit.value = null;
 }
 
 function openEditForm(passage: Passage) {
   formMode.value = "edit";
-  Object.assign(formState, {
-    prompt: passage.prompt,
-    reference: passage.reference,
-    text: passage.text,
-  });
   passageToEdit.value = passage;
   showForm.value = true;
-}
-
-async function submitForm(close?: () => void) {
-  error.value = null;
-  try {
-    if (formMode.value === "create") {
-      if (!user.value?.id) throw new Error("User not found");
-      const payload = { ...formState, userId: user.value.id };
-      const res = await $fetch("/api/passages", {
-        method: "POST",
-        body: payload,
-      });
-      passages.value.push((res as { passage: Passage }).passage);
-    } else if (formMode.value === "edit" && passageToEdit.value) {
-      const res = await $fetch(`/api/passages/${passageToEdit.value.id}`, {
-        method: "PUT",
-        body: formState,
-      });
-      const updated = (res as { passage: Passage }).passage;
-      const idx = passages.value.findIndex((p) => p.id === updated.id);
-      if (idx !== -1) passages.value[idx] = updated;
-    }
-    if (close) close();
-    showForm.value = false;
-  } catch {
-    error.value = "Failed to save passage.";
-  }
 }
 
 function confirmDeletePassage(passage: Passage) {
@@ -113,6 +49,17 @@ async function deletePassage() {
     deleting.value = false;
   }
 }
+
+function addNewPassage(passage: Passage) {
+  passages.value.push(passage);
+  showForm.value = false;
+}
+
+function updatePassage(updated: Passage) {
+  const idx = passages.value.findIndex((p) => p.id === updated.id);
+  if (idx !== -1) passages.value[idx] = updated;
+  showForm.value = false;
+}
 </script>
 
 <template>
@@ -123,6 +70,7 @@ async function deletePassage() {
         v-model:open="showForm"
         title="Create or Update Passage"
         description="A modal to create or update a passage"
+        :ui="{ content: 'h-[80vh]' }"
       >
         <UButton
           label="Add Passage"
@@ -130,43 +78,18 @@ async function deletePassage() {
           @click="openCreateForm"
         />
         <template #content="{ close }">
-          <div class="p-6">
-            <h2 class="font-bold text-lg mb-4">
-              {{ formMode === "create" ? "Add Passage" : "Edit Passage" }}
-            </h2>
-            <UForm
-              :schema="schema"
-              :state="formState"
-              class="space-y-4"
-              @submit.prevent="submitForm(close)"
-            >
-              <UFormField label="Prompt" name="prompt">
-                <UInput v-model="formState.prompt" class="w-full" />
-              </UFormField>
-              <UFormField label="Reference" name="reference">
-                <UInput v-model="formState.reference" class="w-full" />
-              </UFormField>
-              <UFormField label="Text" name="text">
-                <UTextarea v-model="formState.text" :rows="4" class="w-full" />
-              </UFormField>
-              <div class="flex justify-end gap-2 mt-4">
-                <UButton type="button" variant="outline" @click="close()"
-                  >Cancel</UButton
-                >
-                <UButton type="submit" color="primary">
-                  {{ formMode === "create" ? "Create" : "Update" }}
-                </UButton>
-              </div>
-            </UForm>
-          </div>
+          <UpsertPassage
+            :mode="formMode"
+            :passage="passageToEdit"
+            @create="addNewPassage"
+            @update="updatePassage"
+            @cancel="close()"
+          />
         </template>
       </UModal>
     </div>
 
     <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
-    <div v-if="loading" class="flex justify-center py-10">
-      <span>Loading...</span>
-    </div>
     <div v-else>
       <div v-if="passages.length === 0" class="text-gray-500">
         No passages found.

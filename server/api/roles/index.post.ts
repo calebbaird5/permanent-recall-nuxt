@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,10 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const { name, description } = await readValidatedBody(event, bodySchema.parse);
+  const { name, description } = await readValidatedBody(
+    event,
+    bodySchema.parse,
+  );
   const role = await prisma.role.create({ data: { name, description } });
-  return { role };
-}); 
+  return role;
+});

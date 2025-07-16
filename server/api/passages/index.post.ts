@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -13,9 +13,10 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const { prompt, reference, text, userId, reviewDates, latestReviewDate } = await readValidatedBody(event, bodySchema.parse);
+  const { prompt, reference, text, userId, reviewDates, latestReviewDate } =
+    await readValidatedBody(event, bodySchema.parse);
   const passage = await prisma.passage.create({
     data: { prompt, reference, text, userId, reviewDates, latestReviewDate },
   });
-  return { passage };
-}); 
+  return passage;
+});

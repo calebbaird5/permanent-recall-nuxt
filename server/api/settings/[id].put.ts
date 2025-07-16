@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import { getValidatedIdParam } from '../utils';
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import { getValidatedIdParam } from "../utils";
 
 const prisma = new PrismaClient();
 
@@ -11,8 +11,8 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const id = getValidatedIdParam(event, 'setting');
+  const id = getValidatedIdParam(event, "setting");
   const data = await readValidatedBody(event, bodySchema.parse);
   const setting = await prisma.setting.update({ where: { id }, data });
-  return { setting };
-}); 
+  return setting;
+});

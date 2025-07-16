@@ -109,10 +109,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
       <UButton
         type="button"
-        @click="showPassword = !showPassword"
         variant="outline"
         color="primary"
         class="ml-4"
+        @click="showPassword = !showPassword"
       >
         {{ showPassword ? "Cancel Password Change" : "Change Password" }}
       </UButton>

@@ -1,29 +1,64 @@
 <script setup lang="ts">
-definePageMeta({
-  middleware: "auth",
-});
+import { ref } from "vue";
+import type { Passage } from "@/types/api";
+
+definePageMeta({ middleware: "auth" });
+
+const error = ref<string | null>(null);
+const showForm = ref(false);
+
+const { data: passages } = await useFetch<Passage[]>("/api/passages");
+console.log("passages", passages.value);
+
+function addNewPassage(passage: Passage) {
+  if (passages.value ) {
+    passages.value.push(passage);
+    showForm.value = false;
+  }
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-4 h-screen">
-    <h1 class="font-bold text-2xl text-(--ui-primary)">Nuxt UI - Starter</h1>
+  <div class="max-w-2xl mx-auto py-10">
+    <div class="flex justify-center items-center mb-6">
+      <UModal
+        v-model:open="showForm"
+        title="Create Passage"
+        description="Add a new passage"
+      >
+        <UButton
+          label="Create Passage"
+          icon="i-lucide-plus"
+        />
+        <template #content="{ close }">
+          <UpsertPassage
+            mode="create"
+            @create="addNewPassage"
+            @cancel="close()"
+          />
+        </template>
+      </UModal>
+    </div>
 
-    <div class="flex items-center gap-2">
-      <UButton
-        label="Documentation"
-        icon="i-lucide-square-play"
-        to="https://ui.nuxt.com/getting-started/installation/nuxt"
-        target="_blank"
-      />
-
-      <UButton
-        label="GitHub"
-        color="neutral"
-        variant="outline"
-        icon="i-simple-icons-github"
-        to="https://github.com/nuxt/ui"
-        target="_blank"
-      />
+    <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
+    <div v-else>
+      <h2 class="font-bold text-lg mb-4">Today's Review List</h2>
+      <div v-if="!passages || passages.length === 0" class="text-gray-500">
+        No passages found.
+      </div>
+      <template v-if="passages && passages.length > 0">
+        <NuxtLink
+          v-for="passage in passages.slice(0, 5)"
+          :key="Number(passage.id)"
+          :to="`/passages/${passage.id}/review`"
+        >
+          <div class="mb-6 rounded-xl p-6 shadow-lg relative bg-muted">
+            <div class="font-semibold text-lg text-primary">
+              {{ passage.prompt }}
+            </div>
+          </div>
+        </NuxtLink>
+      </template>
     </div>
   </div>
 </template>
