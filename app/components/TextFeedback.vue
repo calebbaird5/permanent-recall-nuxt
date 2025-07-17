@@ -1,6 +1,14 @@
+<script lang="ts">
+export enum FieldStatus {
+  incorrect = "Incorrect",
+  unchecked = 'Unchecked',
+  correct = "correct",
+}
+</script>
 <script setup lang="ts">
 const emit = defineEmits<{
   (e: "updateText", text: string): void;
+  (e: "checked", text: FieldStatus): void;
 }>();
 
 const { expected, entered } = defineProps<{
@@ -37,8 +45,8 @@ function isCorrect(entered: string, expected: string): boolean {
 }
 
 function stringDiff(entered: string, expected: string): DiffWord[] {
-  const enteredWords = (entered ?? "").split(" ");
-  const expectedWords = (expected ?? "").split(" ");
+  const enteredWords = (entered ?? "").split(/\s+/);
+  const expectedWords = (expected ?? "").split(/\s+/);
   const result = enteredWords.map((el, i) => {
     const expectedWord: string =
       i < expectedWords.length && expectedWords[i] !== undefined
@@ -82,44 +90,37 @@ function updateText(value: string, i: number) {
 
 const diff = computed(() => stringDiff(entered, expected));
 
-enum FieldStatus {
-  incorrect = -1,
-  unmarked,
-  correct,
-}
-
 interface DiffWord {
   expected: string;
   entered: string;
   correct: boolean;
 }
 
-const status = ref(FieldStatus.unmarked);
-const showFeedback = ref(false);
+const status = ref(FieldStatus.unchecked);
+const showFeedback = ref(true);
+watch(diff, (newVal) => {
+  const newValue = newVal.some(dw => !dw.correct) ? FieldStatus.incorrect : FieldStatus.correct
+  status.value = newValue
+  emit("checked", newValue)
+}, { immediate: true }
+);
 </script>
 
 <template>
-  <div
-    v-if="showFeedback && status === FieldStatus.incorrect"
-    class="space-y-2"
-  >
+  <div v-if="showFeedback && status === FieldStatus.incorrect" class="space-y-2">
     <div class="text-sm text-red">Incorrect entry.</div>
     <div class="flex flex-wrap gap-1">
       <template v-for="(word, i) in diff" :key="i">
-        <span v-if="word.correct" class="px-1 text-green">
+        <span v-if="word.correct" class="text-green">
           {{ word.expected }}
         </span>
-        <span
-          v-else
-          class="px-1 text-error"
-          @click="updateText(word.expected, i)"
-        >
+        <span v-else class="text-error cursor-help" @click="updateText(word.expected, i)">
           {{ word.entered || "..." }}
         </span>
       </template>
     </div>
-    <UButton size="xs" variant="ghost" @click="showFeedback = false">
-      Hide Feedback
-    </UButton>
   </div>
+  <UButton size="xs" variant="ghost" @click="showFeedback = !showFeedback">
+    {{ showFeedback ? 'Hide' : 'Show' }} Feedback
+  </UButton>
 </template>

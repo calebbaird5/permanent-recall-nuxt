@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TabsItem } from "@nuxt/ui";
+import { FieldStatus } from "../../../components/TextFeedback.vue";
 import type { Passage } from "~/types/api";
 
 definePageMeta({ middleware: "auth" });
@@ -8,10 +9,17 @@ const route = useRoute();
 
 const passageId = Number(route.params.id);
 if (!passageId) {
-  throw new Error("Invalid Passage Id");
+  throw createError({ statusCode: 404, statusMessage: "Passage not found" });
 }
 
 const { data: passage } = await useFetch<Passage>(`/api/passages/${passageId}`);
+if (!passage.value) {
+  throw createError({ statusCode: 404, statusMessage: "Passage not found" });
+}
+// At this point, passage.value is guaranteed to be defined.
+// You can use a non-null assertion to help TypeScript understand this:
+const passageValue = passage.value!;
+
 
 const tabs = ref<TabsItem[]>([
   {
@@ -30,7 +38,7 @@ const showPrompt = ref(true);
 const showReference = ref(false);
 const showText = ref(false);
 
-const formState = reactive<Partial<Passage>>({
+const formState = reactive({
   prompt: "",
   reference: "",
   text: "",
@@ -40,46 +48,26 @@ const formState = reactive<Partial<Passage>>({
 // const strictCapitalization = ref(false);
 // const strictPunctuation = ref(false);
 
-// const textDiff = computed(() =>
-//   // stringDiff(formState.text ?? "", passage.value?.text ?? ""),
-// );
+const showFeedback = ref(false);
 
-// function checkText() {
-//   // const correct = textDiff.value.every((el) => el.correct);
-//   if (correct) {
-//     textStatus.value = FieldStatus.correct;
-//   } else {
-//     textStatus.value = FieldStatus.incorrect;
-//   }
-//   return correct;
-// }
+const referenceStatus = ref(FieldStatus.unchecked)
+const textStatus = ref(FieldStatus.unchecked)
 
-// function checkAnswers() {
-//   // const referenceCheck = checkReference();
-//   const textCheck = checkText();
-//   showReferenceFeedback.value = !referenceCheck;
-//   showTextFeedback.value = !textCheck;
-//   return referenceCheck && textCheck;
-// }
-
-// function updateText(value: string, i: number) {
-//   if (formState.text) {
-//     // formState.text = getUpdatedWords(formState.text, value, i);
-//     checkText();
-//   }
-// }
+function checkAnswers() {
+  showFeedback.value = !showFeedback.value
+}
 
 const error = ref<string | null>(null);
 const reviewing = ref(false);
 async function markReviewed() {
-  // Check if answers are correct before allowing review
-  // const referenceCorrect = checkReference();
-  // const textCorrect = checkText();
+  if ([referenceStatus.value, textStatus.value].includes(FieldStatus.unchecked)) {
+    checkAnswers()
+  }
 
-  // if (!referenceCorrect || !textCorrect) {
-  //   error.value = "Please correct all answers before marking as reviewed.";
-  //   return;
-  // }
+  if (![referenceStatus.value, textStatus.value].every(s => s === FieldStatus.correct)) {
+    error.value = 'Invalid Entry.'
+    return
+  }
 
   error.value = null;
   reviewing.value = true;
@@ -87,31 +75,23 @@ async function markReviewed() {
     await $fetch(`/api/passages/${passageId}/review`, {
       method: "PUT",
     });
-    // Reset status after successful review
-    // referenceStatus.value = FieldStatus.unmarked;
-    // textStatus.value = FieldStatus.unmarked;
-    // showReferenceFeedback.value = false;
-    // showTextFeedback.value = false;
   } catch {
     error.value = "Failed to save passage.";
   } finally {
     reviewing.value = false;
   }
 }
+
 </script>
 
 <template>
-  <UTabs
-    :items="tabs"
-    :ui="{ trigger: 'grow' }"
-    class="gap-4 w-full"
-    variant="link"
-  >
+  <UTabs :items="tabs" :ui="{ trigger: 'grow' }" class="gap-4 w-full" variant="link">
     <template #learn>
       <div class="flex flex-col gap-4">
         <div class="flex items-start">
           <h2 class="text-2xl font-bold flex items-center gap-2">
-            Prompt: <ToggleIcon v-model="showPrompt" />
+            Prompt:
+            <ToggleIcon v-model="showPrompt" />
           </h2>
           <p v-if="showPrompt" class="ml-2 text-2xl">{{ passage?.prompt }}</p>
         </div>
@@ -142,77 +122,43 @@ async function markReviewed() {
           {{ passage?.prompt }}
         </h2>
         <UFormField label="Reference" name="reference">
-          <UInput
-            v-model="formState.reference"
-            class="w-full"
-            :class="{
-              // 'border-green-500': referenceStatus === FieldStatus.correct,
-              // 'border-red-500': referenceStatus === FieldStatus.incorrect,
-            }"
-          />
+          <UInput v-model="formState.reference" class="w-full" :ui="{
+            base: [
+              ...[referenceStatus !== FieldStatus.unchecked && 'border-1'],
+              ...[referenceStatus === FieldStatus.correct && 'border-green-500'],
+              ...[referenceStatus === FieldStatus.incorrect && 'border-red-500'],
+            ]
+          }" />
+          <template v-if="showFeedback" #help>
+            <TextFeedback :entered="formState?.reference" :expected="passageValue.reference"
+              @update-text="(text: string) => (formState.reference = text)"
+              @checked="status => referenceStatus = status" />
+          </template>
         </UFormField>
 
-        <!-- <Feedback
-          :entered="formState?.reference"
-          :expected="passage?.reference"
-          @updateText="(text: string) => (formState.reference = text)"
-        /> -->
 
         <UFormField label="Text" name="text">
-          <UTextarea
-            v-model="formState.text"
-            :rows="4"
-            class="w-full"
-            :class="{
-              // 'border-green-500': textStatus === FieldStatus.correct,
-              // 'border-red-500': textStatus === FieldStatus.incorrect,
-            }"
-          />
+          <UTextarea v-model="formState.text" :rows="4" class="w-full" :ui="{
+            base: [
+              ...[textStatus !== FieldStatus.unchecked && 'border-1'],
+              ...[textStatus === FieldStatus.correct && 'border-green-500'],
+              ...[textStatus === FieldStatus.incorrect && 'border-red-500'],
+            ]
+          }" />
+
+          <template v-if="showFeedback" #help>
+            <TextFeedback :entered="formState?.text" :expected="passageValue.text"
+              @update-text="(text: string) => (formState.text = text)" @checked="status => textStatus = status" />
+          </template>
         </UFormField>
 
-        <!-- Text feedback -->
-        <!-- <div
-          v-if="showTextFeedback && textStatus === FieldStatus.incorrect"
-          class="space-y-2"
-        >
-          <div class="text-sm text-red">Incorrect text. Please fix:</div>
-          <div class="flex flex-wrap gap-1">
-            <template v-for="(word, i) in textDiff" :key="i">
-              <span
-                v-if="word.correct"
-                class="px-1 py-0.5 bg-green-100 text-green-800 rounded"
-              >
-                {{ word.expected }}
-              </span>
-              <UButton
-                v-else
-                size="xs"
-                variant="outline"
-                color="red"
-                @click="updateText(word.expected, i)"
-                class="px-1 py-0.5"
-              >
-                {{ word.entered || "..." }}
-              </UButton>
-            </template>
-          </div>
-          <UButton size="xs" variant="ghost" @click="showTextFeedback = false">
-            Hide Feedback
-          </UButton>
-        </div> -->
-
         <div class="flex justify-between gap-2 mt-4">
-          <UButton type="button" variant="outline"> Check Answers </UButton>
-          <UButton
-            color="primary"
-            :loading="reviewing"
-            :disabled="
-              false
-              // referenceStatus !== FieldStatus.correct ||
-              // textStatus !== FieldStatus.correct
-            "
-            @click="markReviewed"
-          >
+          <UButton type="button" variant="outline" @click="checkAnswers">{{ showFeedback ? 'Hide' : 'Check' }} Answers
+          </UButton>
+          <UButton color="primary" :loading="reviewing" :disabled="false
+            // referenceStatus !== FieldStatus.correct ||
+            // textStatus !== FieldStatus.correct
+            " @click="markReviewed">
             Mark as Reviewed
           </UButton>
         </div>

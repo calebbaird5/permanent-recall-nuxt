@@ -15,11 +15,13 @@ const navItems = computed(() => {
         label: "Dashboard",
         icon: "i-lucide-home",
         to: "/dashboard",
+        ui: !loggedIn.value ? { item: "hidden sm:inline" } : undefined,
       },
       {
         label: "Passages",
         icon: "i-lucide-notebook-text",
         to: "/passages",
+        ui: !loggedIn.value ? { item: "hidden sm:inline" } : undefined,
       },
     ],
   ];
