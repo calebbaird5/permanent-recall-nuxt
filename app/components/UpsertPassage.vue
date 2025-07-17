@@ -8,10 +8,10 @@ const emit = defineEmits<{
   (e: "cancel"): void;
 }>();
 
-const { mode, passage } = withDefaults(defineProps<{
+const { mode, passage = null } = defineProps<{
   mode: "edit" | "create";
   passage?: Passage | null;
-}>(), { passage: null });
+}>();
 
 const error = ref<string | null>(null);
 
