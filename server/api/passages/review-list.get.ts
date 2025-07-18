@@ -22,20 +22,25 @@ export default defineEventHandler(async (event) => {
     include: { reviews: { orderBy: { date: "desc" } } },
     orderBy: { createdAt: "asc" },
   });
+
+  const createdOneToday = passages.some((passage) =>
+    isToday(passage.createdAt),
+  );
+
   const passagesWithLatestReviewDate: PassageWithLatestReview[] = passages.map(
     (passage) => ({
       ...passage,
       latestReviewDate: passage.reviews?.length
         ? passage.reviews[0].createdAt
         : null,
-    })
+    }),
   );
 
   const daily = passagesWithLatestReviewDate.filter(
     (el) =>
       !el.reviews.length ||
       !el.latestReviewDate ||
-      (el.reviews.length < 7 && !isToday(el.latestReviewDate))
+      (el.reviews.length < 7 && !isToday(el.latestReviewDate)),
   );
 
   const weekly = passagesWithLatestReviewDate.filter(
@@ -43,7 +48,7 @@ export default defineEventHandler(async (event) => {
       el.latestReviewDate &&
       el.reviews.length >= 7 &&
       el.reviews.length < 11 &&
-      el.latestReviewDate < weekBefore()
+      el.latestReviewDate < weekBefore(),
   );
 
   const monthly = passagesWithLatestReviewDate.filter(
@@ -51,14 +56,14 @@ export default defineEventHandler(async (event) => {
       el.latestReviewDate &&
       el.reviews.length >= 11 &&
       el.reviews.length < 23 &&
-      el.latestReviewDate < monthBefore()
+      el.latestReviewDate < monthBefore(),
   );
 
   const yearly = passagesWithLatestReviewDate.filter(
     (el) =>
       el.latestReviewDate &&
       el.reviews.length >= 23 &&
-      el.latestReviewDate < yearBefore()
+      el.latestReviewDate < yearBefore(),
   );
 
   return {
@@ -67,5 +72,6 @@ export default defineEventHandler(async (event) => {
     monthly,
     yearly,
     all: ([] as typeof passages).concat(daily, weekly, monthly, yearly),
+    createdOneToday,
   };
 });

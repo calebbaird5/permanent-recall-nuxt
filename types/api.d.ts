@@ -61,6 +61,7 @@ export interface Passage {
   userId: number;
   user?: User;
   reviews?: Review[];
+  createdAt: string;
 }
 
 export interface PassageReviewList {
@@ -69,6 +70,7 @@ export interface PassageReviewList {
   monthly: Passage[];
   yearly: Passage[];
   all: Passage[];
+  createdOneToday: boolean;
 }
 
 export interface PassageCreatePayload {

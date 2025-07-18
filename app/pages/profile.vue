@@ -96,24 +96,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UInput v-model="state.password" type="password" class="w-full" />
         </UFormField>
         <UFormField label="Confirm Password" name="passwordConfirm">
-          <UInput
-            v-model="state.passwordConfirm"
-            type="password"
-            class="w-full"
-          />
+          <UInput v-model="state.passwordConfirm" type="password" class="w-full" />
         </UFormField>
       </template>
       <UButton type="submit" :loading="loading" color="primary">
         Update Profile
       </UButton>
 
-      <UButton
-        type="button"
-        variant="outline"
-        color="primary"
-        class="ml-4"
-        @click="showPassword = !showPassword"
-      >
+      <UButton type="button" variant="outline" color="primary" class="ml-4" @click="showPassword = !showPassword">
         {{ showPassword ? "Cancel Password Change" : "Change Password" }}
       </UButton>
 
@@ -121,5 +111,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         {{ error }}
       </div>
     </UForm>
+    <UModal title="Bulk Upload Passages" :ui="{ content: 'h-[80vh]' }">
+      <UButton class="mt-8 w-full" color="primary" icon="i-lucide-upload">
+        Bulk Upload Passages
+      </UButton>
+      <template #content="{ close }">
+        <BulkUploadPassages @success="close()" />
+      </template>
+    </UModal>
   </UContainer>
 </template>
