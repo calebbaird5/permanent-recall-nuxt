@@ -13,7 +13,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const id = getValidatedIdParam(event, "passage");
-  const {id: callerId} = getCaller(event)
+  const { id: callerId } = await getCaller(event);
   const data = await readValidatedBody(event, bodySchema.parse);
   const passage = await prisma.passage.update({
     where: { id, userId: callerId },
@@ -21,9 +21,9 @@ export default defineEventHandler(async (event) => {
     include: {
       user: true,
       reviews: {
-        orderBy: { date: 'desc' }
-      }
-    }
+        orderBy: { date: "desc" },
+      },
+    },
   });
   return passage;
 });

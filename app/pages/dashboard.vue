@@ -8,10 +8,9 @@ const error = ref<string | null>(null);
 const showForm = ref(false);
 
 const { data: passages } = await useFetch<Passage[]>("/api/passages");
-console.log("passages", passages.value);
 
 function addNewPassage(passage: Passage) {
-  if (passages.value ) {
+  if (passages.value) {
     passages.value.push(passage);
     showForm.value = false;
   }
@@ -26,10 +25,7 @@ function addNewPassage(passage: Passage) {
         title="Create Passage"
         description="Add a new passage"
       >
-        <UButton
-          label="Create Passage"
-          icon="i-lucide-plus"
-        />
+        <UButton label="Create Passage" icon="i-lucide-plus" />
         <template #content="{ close }">
           <UpsertPassage
             mode="create"

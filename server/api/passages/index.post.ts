@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     event,
     bodySchema.parse
   );
-  const { id: callerId } = getCaller(event);
+  const { id: callerId } = await getCaller(event);
   const passage = await prisma.passage.create({
     data: {
       prompt,

@@ -10,7 +10,7 @@ const bodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const { id: callerId } = getCaller(event);
+  const { id: callerId } = await getCaller(event);
   const { name, value } = await readValidatedBody(event, bodySchema.parse);
   const setting = await prisma.setting.create({
     data: { name, value, userId: callerId },

@@ -1,23 +1,29 @@
-import { PrismaClient, User } from '@prisma/client';
-import type { EventHandlerRequest, H3Event } from 'h3';
+import { PrismaClient, User } from "@prisma/client";
+import type { EventHandlerRequest, H3Event } from "h3";
+import { ImportsNotUsedAsValues } from "typescript";
 
-export function getValidatedIdParam(event: H3Event, resource: string = 'resource') {
-  const id = Number(getRouterParam(event, 'id'));
-  if (isNaN(id)) throw createError({ statusCode: 400, message: `Invalid ${resource} id` });
+export function getValidatedIdParam(
+  event: H3Event,
+  resource: string = "resource"
+) {
+  const id = Number(getRouterParam(event, "id"));
+  if (isNaN(id))
+    throw createError({ statusCode: 400, message: `Invalid ${resource} id` });
   return id;
+}
 
-} 
-
-export async function getLatestReviewDate(passageId: number): Promise<Date | null> {
+export async function getLatestReviewDate(
+  passageId: number
+): Promise<Date | null> {
   const prisma = new PrismaClient();
-  
+
   const latestReview = await prisma.review.findFirst({
     where: { passageId },
-    orderBy: { date: 'desc' }
+    orderBy: { date: "desc" },
   });
-  
+
   return latestReview?.date || null;
-} 
+}
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -84,6 +90,10 @@ export function yearBefore(date?: Date): Date {
   return result;
 }
 
-export function getCaller(event: H3Event<EventHandlerRequest>): User {
-  return event.context?.auth?.user || event.context?.user
+export async function getCaller(
+  event: H3Event<EventHandlerRequest>
+): Promise<User> {
+  const session = await requireUserSession(event);
+  const user = session.user as User;
+  return user;
 }

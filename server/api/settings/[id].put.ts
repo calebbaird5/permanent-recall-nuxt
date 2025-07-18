@@ -12,7 +12,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const id = getValidatedIdParam(event, "setting");
-  const { id: callerId } = getCaller(event);
+  const { id: callerId } = await getCaller(event);
   const data = await readValidatedBody(event, bodySchema.parse);
   const setting = await prisma.setting.update({
     where: { id, userId: callerId },

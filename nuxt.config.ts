@@ -15,7 +15,12 @@ export default defineNuxtConfig({
   vite: {
     server: {
       watch: {
-        ignored: ["**/.flycheck_*"], // Ignore flycheck temp files
+        ignored: [
+          "**/.flycheck_*",
+          "**/.nuxt/**",
+          "**/.output/**",
+          "**/node_modules/**",
+        ],
       },
     },
   },

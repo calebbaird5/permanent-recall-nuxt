@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   const id = getValidatedIdParam(event, "setting");
-  const { id: callerId } = getCaller(event);
+  const { id: callerId } = await getCaller(event);
   await prisma.setting.delete({ where: { id, userId: callerId } });
   return { success: true };
 });

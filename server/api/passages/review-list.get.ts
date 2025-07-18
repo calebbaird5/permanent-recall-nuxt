@@ -10,7 +10,7 @@ import {
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  const { id: callerId } = getCaller(event);
+  const { id: callerId } = await getCaller(event);
   const passages = await prisma.passageWithLatestReview.findMany({
     where: { userId: callerId },
     include: { reviews: { orderBy: { date: "desc" } } },
