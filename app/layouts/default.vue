@@ -12,8 +12,14 @@ const navItems = computed(() => {
   const items: NavigationMenuItem[][] = [
     [
       {
-        label: "Dashboard",
+        label: "Home",
         icon: "i-lucide-home",
+        to: "/",
+        ui: !loggedIn.value ? { item: "hidden sm:inline" } : undefined,
+      },
+      {
+        label: "Dashboard",
+        icon: "i-lucide-list-checks",
         to: "/dashboard",
         ui: !loggedIn.value ? { item: "hidden sm:inline" } : undefined,
       },
