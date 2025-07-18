@@ -11,26 +11,23 @@ const emit = defineEmits<{
   (e: "checked", text: FieldStatus): void;
 }>();
 
-const { expected, entered } = defineProps<{
+const { expected, entered, strictCapitalization = false, strictPunctuation = false } = defineProps<{
   expected: string;
   entered: string;
+  strictCapitalization?: boolean;
+  strictPunctuation?: boolean;
 }>();
-
-
-// Settings for answer checking - simplified without external store
-const strictCapitalization = ref(false);
-const strictPunctuation = ref(false);
 
 function isCorrect(entered: string, expected: string): boolean {
   let enteredNormalized = entered;
   let expectedNormalized = expected;
 
-  if (!strictCapitalization.value) {
+  if (!strictCapitalization) {
     enteredNormalized = enteredNormalized.toUpperCase();
     expectedNormalized = expectedNormalized.toUpperCase();
   }
 
-  if (!strictPunctuation.value) {
+  if (!strictPunctuation) {
     enteredNormalized = enteredNormalized.replace(
       /[.,/#!$%^&*;:{}=\-_`~()]/g,
       "",

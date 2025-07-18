@@ -2,6 +2,7 @@
 import type { TabsItem } from "@nuxt/ui";
 import { FieldStatus } from "../../../components/TextFeedback.vue";
 import type { Passage } from "~/types/api";
+import type { Setting } from "@prisma/client";
 
 definePageMeta({ middleware: "auth" });
 
@@ -44,9 +45,15 @@ const formState = reactive({
   text: "",
 });
 
-// Settings for answer checking - simplified without external store
-// const strictCapitalization = ref(false);
-// const strictPunctuation = ref(false);
+const { data: settings } = await useFetch<Setting[]>("/api/settings");
+
+// Extract settings for answer checking
+const strictCapitalization = computed(() =>
+  settings.value?.find(s => s.name === "strict-capitalization")?.value === "true" || false
+);
+const strictPunctuation = computed(() =>
+  settings.value?.find(s => s.name === "strict-punctuation")?.value === "true" || false
+);
 
 const showFeedback = ref(false);
 
@@ -131,6 +138,7 @@ async function markReviewed() {
           }" />
           <template v-if="showFeedback" #help>
             <TextFeedback :entered="formState?.reference" :expected="passageValue.reference"
+              :strict-capitalization="strictCapitalization" :strict-punctuation="strictPunctuation"
               @update-text="(text: string) => (formState.reference = text)"
               @checked="status => referenceStatus = status" />
           </template>
@@ -148,6 +156,7 @@ async function markReviewed() {
 
           <template v-if="showFeedback" #help>
             <TextFeedback :entered="formState?.text" :expected="passageValue.text"
+              :strict-capitalization="strictCapitalization" :strict-punctuation="strictPunctuation"
               @update-text="(text: string) => (formState.text = text)" @checked="status => textStatus = status" />
           </template>
         </UFormField>
