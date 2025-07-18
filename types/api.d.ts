@@ -42,6 +42,16 @@ export interface AuthLogoutResponse {
   success: boolean;
 }
 
+// Review types
+export interface Review {
+  id: number;
+  date: Date;
+  passageId: number;
+  passage?: Passage;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Passage types
 export interface Passage {
   id: number;
@@ -50,23 +60,18 @@ export interface Passage {
   text: string;
   userId: number;
   user?: User;
-  reviewDates?: Date[];
-  latestReviewDate?: Date | null;
+  reviews?: Review[];
 }
 export interface PassageCreatePayload {
   prompt: string;
   reference: string;
   text: string;
   userId: number;
-  reviewDates?: Date[];
-  latestReviewDate?: Date;
 }
 export interface PassageUpdatePayload {
   prompt?: string;
   reference?: string;
   text?: string;
-  reviewDates?: Date[];
-  latestReviewDate?: Date;
   userId?: number;
 }
 export interface PassageDeleteResponse {

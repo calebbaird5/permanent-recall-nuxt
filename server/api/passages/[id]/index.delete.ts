@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { getValidatedIdParam } from '../utils';
+import { getCaller, getValidatedIdParam } from '../../utils';
 
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
+
   const id = getValidatedIdParam(event, 'passage');
-  await prisma.passage.delete({ where: { id } });
+  const {id: callerId} = getCaller(event)
+  await prisma.passage.delete({ where: { id, userId: callerId } });
   return { success: true };
 }); 
