@@ -11,7 +11,6 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse);
-  console.log("email:", email);
 
   // Find user by email
   const user = await prisma.user.findUnique({

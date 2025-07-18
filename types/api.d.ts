@@ -62,6 +62,15 @@ export interface Passage {
   user?: User;
   reviews?: Review[];
 }
+
+export interface PassageReviewList {
+  daily: Passage[];
+  weekly: Passage[];
+  monthly: Passage[];
+  yearly: Passage[];
+  all: Passage[];
+}
+
 export interface PassageCreatePayload {
   prompt: string;
   reference: string;

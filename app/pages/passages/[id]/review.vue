@@ -82,6 +82,7 @@ async function markReviewed() {
     await $fetch(`/api/passages/${passageId}/review`, {
       method: "PUT",
     });
+    await navigateTo("/dashboard");
   } catch {
     error.value = "Failed to save passage.";
   } finally {
@@ -164,10 +165,7 @@ async function markReviewed() {
         <div class="flex justify-between gap-2 mt-4">
           <UButton type="button" variant="outline" @click="checkAnswers">{{ showFeedback ? 'Hide' : 'Check' }} Answers
           </UButton>
-          <UButton color="primary" :loading="reviewing" :disabled="false
-            // referenceStatus !== FieldStatus.correct ||
-            // textStatus !== FieldStatus.correct
-            " @click="markReviewed">
+          <UButton color="primary" :loading="reviewing" @click="markReviewed">
             Mark as Reviewed
           </UButton>
         </div>

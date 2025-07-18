@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { Passage, PrismaClient, Review } from "@prisma/client";
 import {
   getCaller,
+  getLatestReviewDate,
   isToday,
   monthBefore,
   weekBefore,
@@ -9,22 +10,35 @@ import {
 
 const prisma = new PrismaClient();
 
+export interface PassageWithLatestReview extends Passage {
+  latestReviewDate: Date | null;
+  reviews: Review[];
+}
+
 export default defineEventHandler(async (event) => {
   const { id: callerId } = await getCaller(event);
-  const passages = await prisma.passageWithLatestReview.findMany({
+  const passages = await prisma.passage.findMany({
     where: { userId: callerId },
     include: { reviews: { orderBy: { date: "desc" } } },
     orderBy: { createdAt: "asc" },
   });
+  const passagesWithLatestReviewDate: PassageWithLatestReview[] = passages.map(
+    (passage) => ({
+      ...passage,
+      latestReviewDate: passage.reviews?.length
+        ? passage.reviews[0].createdAt
+        : null,
+    })
+  );
 
-  const daily = passages.filter(
+  const daily = passagesWithLatestReviewDate.filter(
     (el) =>
       !el.reviews.length ||
       !el.latestReviewDate ||
       (el.reviews.length < 7 && !isToday(el.latestReviewDate))
   );
 
-  const weekly = passages.filter(
+  const weekly = passagesWithLatestReviewDate.filter(
     (el) =>
       el.latestReviewDate &&
       el.reviews.length >= 7 &&
@@ -32,7 +46,7 @@ export default defineEventHandler(async (event) => {
       el.latestReviewDate < weekBefore()
   );
 
-  const monthly = passages.filter(
+  const monthly = passagesWithLatestReviewDate.filter(
     (el) =>
       el.latestReviewDate &&
       el.reviews.length >= 11 &&
@@ -40,7 +54,7 @@ export default defineEventHandler(async (event) => {
       el.latestReviewDate < monthBefore()
   );
 
-  const yearly = passages.filter(
+  const yearly = passagesWithLatestReviewDate.filter(
     (el) =>
       el.latestReviewDate &&
       el.reviews.length >= 23 &&

@@ -11,15 +11,14 @@ generator client {
 
 // Your models go below
 model User {
-  id                      Int                       @id @default(autoincrement())
-  email                   String                    @unique
-  password                String
-  name                    String
-  passages                Passage[]
-  role                    Role?                     @relation(fields: [roleId], references: [id])
-  roleId                  Int?
-  settings                Setting[]
-  PassageWithLatestReview PassageWithLatestReview[]
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  name     String
+  passages Passage[]
+  role     Role?     @relation(fields: [roleId], references: [id])
+  roleId   Int?
+  settings Setting[]
 }
 
 model Passage {
@@ -34,31 +33,13 @@ model Passage {
   updatedAt DateTime @updatedAt
 }
 
-model PassageWithLatestReview {
-  id               Int       @id @default(autoincrement())
-  prompt           String
-  reference        String
-  text             String
-  userId           Int
-  user             User      @relation(fields: [userId], references: [id])
-  reviews          Review[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  latestReviewId   Int?
-  latestReviewDate DateTime?
-
-  @@map("PassageWithLatestReview")
-}
-
 model Review {
-  id                        Int                      @id @default(autoincrement())
-  date                      DateTime                 @default(now())
-  passageId                 Int
-  passage                   Passage                  @relation(fields: [passageId], references: [id], onDelete: Cascade)
-  createdAt                 DateTime                 @default(now())
-  updatedAt                 DateTime
-  PassageWithLatestReview   PassageWithLatestReview? @relation(fields: [passageWithLatestReviewId], references: [id])
-  passageWithLatestReviewId Int?
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now())
+  passageId Int
+  passage   Passage  @relation(fields: [passageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
 }
 
 model Role {
